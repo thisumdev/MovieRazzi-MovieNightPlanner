@@ -1,0 +1,67 @@
+# ==========================
+# Python / FastAPI Backend
+# ==========================
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.db
+*.sqlite3
+instance/
+.env
+*.env
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# Logs
+*.log
+
+# ==========================
+# Node.js / React + Vite Frontend
+# ==========================
+node_modules/
+dist/
+build/
+.vite/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependency directories
+jspm_packages/
+
+# ==========================
+# IDE / Editor settings
+# ==========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.code-workspace
+
+# ==========================
+# System files
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# Others
+# ==========================
+*.bak
+*.tmp
