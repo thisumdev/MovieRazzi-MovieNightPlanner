@@ -8,7 +8,7 @@ def analyze_preferences(user_input: str) -> Dict:
     """
 
     # Predefined genres for matching
-    genres_list = ["action", "comedy", "romantic", "thriller", "horror", "drama", "sci-fi"]
+    genres_list = ["action", "romance", "comedy", "romantic", "thriller", "horror", "drama", "sci-fi"]
     genres = [g.title() for g in genres_list if g in user_input.lower()]
 
     # Extract duration from input if mentioned
@@ -30,5 +30,4 @@ def analyze_preferences(user_input: str) -> Dict:
         "preferred_actors": actors,
         "language": "English",
         "duration_limit": duration,
-        "mood": "Not specified"
     }
