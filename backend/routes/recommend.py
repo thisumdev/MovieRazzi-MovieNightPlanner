@@ -7,7 +7,7 @@ from core.dependencies import get_current_user
 router = APIRouter(
     prefix="/recommend-movies",
     tags=["Movie Selector"],
-   # dependencies=[Depends(get_current_user)],  # Apply to all routes here
+   # dependencies=[Depends(get_current_user)],  
 )
 
 @router.post("", response_model=list[MovieOut])
