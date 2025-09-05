@@ -1,8 +1,16 @@
+import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 from auth import auth_routes
 from core.dependencies import get_current_user
+from routes import recommend
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 
 app = FastAPI()
@@ -21,6 +29,7 @@ allow_headers=["*"],
 
 
 app.include_router(auth_routes.router)
+app.include_router(recommend.router)
 
 
 @app.get("/profile")
