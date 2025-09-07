@@ -1,8 +1,10 @@
+// src/components/Input.jsx
+
 const Input = ({ icon: Icon, ...props }) => {
   return (
     <div className="relative mb-2">
       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-        <Icon className="size-5 text-[#2563eb]"></Icon>
+        <Icon className="size-5 text-[#2563eb]" />
       </div>
       <input
         {...props}

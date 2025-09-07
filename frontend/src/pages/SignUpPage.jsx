@@ -1,4 +1,4 @@
-// src/pages/SignUpPage.jsx
+// Updated SignUpPage.jsx with MovieRazzi dark theme
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -23,16 +23,16 @@ const SignUpPage = () => {
 
     try {
       await API.post("/signup", {
-        username: username,
-        email: email,
-        password: password,
+        username,
+        email,
+        password,
       });
       toast.success("Signup successful!");
       navigate("/login");
     } catch (err) {
       const message = err.response?.data?.detail || "Signup failed";
       toast.error(message);
-      setError(err.response?.data?.detail || "Signup failed");
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -40,14 +40,16 @@ const SignUpPage = () => {
 
   return (
     <motion.div
-      className="max-w-md w-full mt-10 bg-white bg-opacity-50 backdrop-blur-xl rounded-2xl shadow-xl p-8"
+      className="max-w-md w-full mt-16 bg-[#161B22] text-white rounded-xl shadow-lg p-8 border border-white/10 backdrop-blur"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+      <h2 className="text-2xl font-bold text-center mb-6">
+        Create Your MovieRazzi Account
+      </h2>
       <form onSubmit={handleSignup}>
-        <p className="text-sm text-gray-600">Username</p>
+        <p className="text-sm text-gray-400">Username</p>
         <Input
           icon={User}
           type="text"
@@ -56,7 +58,7 @@ const SignUpPage = () => {
           placeholder="Username"
         />
 
-        <p className="text-sm text-gray-600 mt-4">Email</p>
+        <p className="text-sm text-gray-400 mt-4">Email</p>
         <Input
           icon={Mail}
           type="email"
@@ -65,7 +67,7 @@ const SignUpPage = () => {
           placeholder="Email address"
         />
 
-        <p className="text-sm text-gray-600 mt-4">Password</p>
+        <p className="text-sm text-gray-400 mt-4">Password</p>
         <Input
           icon={Lock}
           type="password"
@@ -83,14 +85,14 @@ const SignUpPage = () => {
           whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={isLoading}
-          className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg shadow-md"
+          className="mt-6 w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white py-3 rounded-lg shadow-md"
         >
           {isLoading ? <Loader className="mx-auto animate-spin" /> : "Sign Up"}
         </motion.button>
       </form>
-      <div className="text-center mt-4 text-sm">
+      <div className="text-center mt-4 text-sm text-gray-400">
         Already have an account?{" "}
-        <Link to="/login" className="text-blue-600 hover:underline">
+        <Link to="/login" className="text-orange-400 hover:underline">
           Login
         </Link>
       </div>
