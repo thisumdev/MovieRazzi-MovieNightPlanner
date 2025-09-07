@@ -1,4 +1,4 @@
-// src/pages/LoginPage.jsx
+// Updated LoginPage.jsx with MovieRazzi dark theme
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -38,14 +38,16 @@ const LoginPage = () => {
 
   return (
     <motion.div
-      className="max-w-md w-full mt-10 bg-white bg-opacity-50 backdrop-blur-xl rounded-2xl shadow-xl p-8"
+      className="max-w-md w-full mt-16 bg-[#161B22] text-white rounded-xl shadow-lg p-8 border border-white/10 backdrop-blur"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+      <h2 className="text-2xl font-bold text-center mb-6">
+        Login to MovieRazzi
+      </h2>
       <form onSubmit={handleLogin}>
-        <p className="text-sm text-gray-600">Username</p>
+        <p className="text-sm text-gray-400">Username</p>
         <Input
           icon={Mail}
           type="text"
@@ -54,7 +56,7 @@ const LoginPage = () => {
           placeholder="Username"
         />
 
-        <p className="text-sm text-gray-600 mt-4">Password</p>
+        <p className="text-sm text-gray-400 mt-4">Password</p>
         <Input
           icon={Lock}
           type="password"
@@ -70,14 +72,14 @@ const LoginPage = () => {
           whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={isLoading}
-          className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg shadow-md"
+          className="mt-6 w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white py-3 rounded-lg shadow-md"
         >
           {isLoading ? <Loader className="mx-auto animate-spin" /> : "Login"}
         </motion.button>
       </form>
-      <div className="text-center mt-4 text-sm">
+      <div className="text-center mt-4 text-sm text-gray-400">
         Don't have an account?{" "}
-        <Link to="/signup" className="text-blue-600 hover:underline">
+        <Link to="/signup" className="text-orange-400 hover:underline">
           Sign up
         </Link>
       </div>
