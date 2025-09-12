@@ -1,9 +1,8 @@
 import sys
 import os
 from typing import List, Dict
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from datetime import datetime, timedelta
+
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from schemas.schedule import (
@@ -231,7 +230,10 @@ def test_schedule_agent():
             print(f"\n❌ Couldn't schedule: {', '.join(result.unscheduled_movies)}")
 
         # Show calendar visualization
-        ScheduleVisualizer.show_weekly_calendar(result.scheduled_movies)
+        visualizer = TerminalScheduleVisualizer()
+        visualizer.show_simple_schedule(result.scheduled_movies, result.unscheduled_movies)
+        visualizer.show_weekly_calendar(result.scheduled_movies)
+        visualizer.show_timeline_view(result.scheduled_movies)
 
 
 if __name__ == "__main__":
