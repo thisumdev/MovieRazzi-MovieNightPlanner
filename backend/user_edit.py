@@ -1,7 +1,7 @@
 # delete_user.py
 import sqlite3
 
-username = "thisumdev"  # <- change this
+username = "thisum"  # <- change this
 
 conn = sqlite3.connect("users.db")
 cursor = conn.cursor()

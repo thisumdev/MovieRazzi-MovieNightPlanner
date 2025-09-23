@@ -1,13 +1,21 @@
-import { Navigate } from "react-router-dom";
+import React from "react";
+import { useAuth } from "../lib/useAuth.js";
+import { AuthPages } from "../pages/AuthPages";
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+export function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading MovieHub...</p>
+        </div>
+      </div>
+    );
   }
 
-  return children;
-};
-
-export default ProtectedRoute;
+  if (!user) return <AuthPages />;
+  return <>{children}</>;
+}
