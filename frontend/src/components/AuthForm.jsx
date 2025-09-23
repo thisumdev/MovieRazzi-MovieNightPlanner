@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Play } from "lucide-react";
 import { useAuth } from "../lib/useAuth";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export function AuthForm({ mode, onToggleMode }) {
   const { signIn, signUp } = useAuth();
@@ -13,6 +14,9 @@ export function AuthForm({ mode, onToggleMode }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const backgroundImages = [
     "https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop",
@@ -41,8 +45,9 @@ export function AuthForm({ mode, onToggleMode }) {
       if (mode === "login") {
         const result = await signIn(formData.username, formData.password);
         if (result?.error) {
-          // Force your exact login message
           setError("Invalid Credentials. Try Again!!");
+        } else {
+          navigate(from, { replace: true }); // ✅
         }
       } else {
         const result = await signUp(
@@ -51,12 +56,12 @@ export function AuthForm({ mode, onToggleMode }) {
           formData.password
         );
         if (result?.error) {
-          // Force your exact signup message
           setError("Sign Up Failed!");
+        } else {
+          navigate(from, { replace: true }); // ✅
         }
       }
     } catch {
-      // Also map unexpected exceptions to your messages
       setError(
         mode === "login"
           ? "Invalid Credentials. Try Again!!"
