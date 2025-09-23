@@ -1,151 +1,211 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { motion } from "framer-motion";
-import { Search, Menu, LogOut, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-import movieCover from "../assets/cover-img.png";
-import MovieDescriptionModal from "../components/MovieDescriptionModal";
+import { Search, Play, RefreshCw, Sparkles } from "lucide-react";
+import { Navigation } from "../components/Navigation";
+import { MovieCard } from "../components/MovieCard";
+import { MovieModal } from "../components/MovieModal";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const TMDB_BASE = "https://api.themoviedb.org/3";
 
-const OverviewPage = () => {
+export function OverviewPage() {
   const [movies, setMovies] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
+  const [query, setQuery] = useState("");
 
-  const navigate = useNavigate();
-
-  // Fetch random movies on mount
   useEffect(() => {
-    fetchRandomMovies();
+    fetchRandomMoviesSafe();
   }, []);
 
-  const fetchRandomMovies = async () => {
+  const fetchRandomMoviesSafe = async () => {
     try {
-      const page = Math.floor(Math.random() * 500) + 1;
-      const res = await axios.get(
-        `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=en-US&page=${page}&include_adult=false`
-      );
-      const randomMovies = res.data.results
-        .filter((m) => m.poster_path)
-        .slice(0, 18); // only 15 movies
-      setMovies(randomMovies);
-      setSelectedMovie(null);
-    } catch (error) {
-      console.error("Failed to fetch movies:", error);
+      if (!API_KEY) throw new Error("Missing VITE_TMDB_API_KEY");
+      setLoading(true);
+      setError(null);
+
+      // Try up to 3 random pages to ensure we get a decent safe batch
+      let attempts = 0;
+      let safeBatch = [];
+
+      while (attempts < 3 && safeBatch.length === 0) {
+        attempts += 1;
+        const page = Math.floor(Math.random() * 500) + 1;
+
+        const res = await axios.get(`${TMDB_BASE}/discover/movie`, {
+          params: {
+            api_key: API_KEY,
+            language: "en-US",
+            page,
+            sort_by: "popularity.desc",
+            include_adult: false, // server-side adult filter
+            include_video: false,
+            certification_country: "US", // restrict to US ratings
+            certification_lte: "PG-13", // keep G/PG/PG-13 only
+            vote_count_gte: 50, // avoid obscure edge cases
+            // Optional: bias to US availability; comment out if too strict:
+            // watch_region: "US",
+          },
+        });
+
+        const results = Array.isArray(res.data?.results)
+          ? res.data.results
+          : [];
+
+        // Client-side safety net: re-check the adult flag and require a poster
+        safeBatch = results
+          .filter((m) => m && m.poster_path && m.adult !== true)
+          .slice(0, 18);
+      }
+
+      if (safeBatch.length === 0) {
+        throw new Error(
+          "Couldn't find safe titles right now. Please try again."
+        );
+      }
+
+      setMovies(safeBatch);
+      setSelectedMovieId(null);
+    } catch (err) {
+      console.error("Failed to fetch safe movies:", err);
+      setError("Failed to load safe movies. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleMovieClick = (movie) => {
-    setSelectedMovie(movie);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  const handleCloseModal = () => setSelectedMovieId(null);
+  const handleMagic = () => fetchRandomMoviesSafe();
 
   return (
-    <div className="bg-gray-100 min-h-screen relative">
-      {/* 🔽 Dropdown Menu */}
-      <div className="absolute top-6 right-6 z-50">
-        <div className="relative group">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md hover:bg-gray-200 transition">
-            <Menu className="w-5 h-5" />
-            <span className="text-sm font-medium">Menu</span>
-          </button>
+    <div className="min-h-screen bg-gray-900">
+      <Navigation />
 
-          <div className="hidden group-hover:flex flex-col absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border z-50">
-            <button
-              className="px-4 py-2 text-left hover:bg-gray-100 text-sm flex items-center gap-2"
-              onClick={() => console.log("Movie Schedules clicked")}
-            >
-              <Calendar className="w-4 h-4" />
-              Movie Schedules
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-left hover:bg-gray-100 text-sm flex items-center gap-2 text-red-500"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
+      {/* Hero */}
+      <div className="relative h-[600px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop"
+            alt=""
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://images.pexels.com/photos/7991319/pexels-photo-7991319.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop";
+            }}
+          />
         </div>
-      </div>
+        <div className="absolute inset-0 bg-black/60 z-10" />
 
-      {/* 🎬 Cover Image with Search */}
-      <div
-        className="relative w-full h-[75vh] bg-cover bg-center flex flex-col items-center justify-center"
-        style={{ backgroundImage: `url(${movieCover})` }}
-      >
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-        <div className="relative z-10 w-full max-w-xl text-center px-4">
-          <div className="relative mb-4">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="w-5 h-5 text-white" />
-            </div>
+        <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
+          <div className="flex items-center justify-center mb-6">
+            <Play className="h-16 w-16 text-red-600 mr-4" />
+            <h1 className="text-6xl md:text-8xl font-bold text-white">
+              Movie<span className="text-red-600">Razzi</span>
+            </h1>
+          </div>
+
+          <p className="text-xl md:text-2xl text-gray-300 mb-8">
+            Unlimited movies, TV shows and more.
+          </p>
+
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-6 w-6" />
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Enter your preferences… Let the Movie Magic begin!"
-              className="w-full pl-11 pr-4 py-3 rounded-xl text-base
-                bg-white/10 text-white placeholder-white/70
-                border border-white/30 focus:outline-none
-                focus:ring-2 focus:ring-[#2563eb] focus:border-[#2563eb]
-                shadow-sm transition duration-200 backdrop-blur-sm"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="What would you like to watch?"
+              className="w-full bg-black/50 backdrop-blur-sm text-white pl-12 pr-6 py-4 rounded-full text-lg focus:outline-none focus:ring-2 focus:ring-red-600 border border-gray-600 placeholder-gray-400"
             />
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="mt-2 px-6 py-3 rounded-xl bg-[#2563eb] text-white font-semibold shadow-md hover:bg-blue-700 transition"
-            onClick={() => console.log("User preferences:", search)}
-          >
-            Do the magic!!
-          </motion.button>
-        </div>
-      </div>
-
-      {/* 🟦 Movie Grid */}
-      <div className="w-full py-10 px-6">
-        <h2 className="text-2xl font-semibold mb-6 text-center">
-          🎬 Explore Movies
-        </h2>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 justify-items-center">
-          {movies.map((movie) => (
-            <motion.div
-              key={movie.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:scale-105 transition w-full max-w-[200px]"
-              onClick={() => handleMovieClick(movie)}
-              whileHover={{ scale: 1.03 }}
+          <div className="mt-6">
+            <button
+              onClick={handleMagic}
+              disabled={loading}
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-full font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
             >
-              <img
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                alt={movie.title}
-                className="w-full h-64 object-cover"
-              />
-              <div className="p-2">
-                <h3 className="text-sm font-semibold text-center">
-                  {movie.title}
-                </h3>
-              </div>
-            </motion.div>
-          ))}
+              {loading ? (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Do the magic!!!
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 🔳 Movie Modal */}
-      <MovieDescriptionModal
-        movie={selectedMovie}
-        onClose={() => setSelectedMovie(null)}
-      />
+      {/* Grid */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl font-bold text-white">
+            Random Movies (Safe)
+          </h2>
+          <button
+            onClick={fetchRandomMoviesSafe}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full transition-colors"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500 text-red-500 px-6 py-4 rounded-lg mb-8 text-center">
+            <p className="text-lg">{error}</p>
+            <button
+              onClick={fetchRandomMoviesSafe}
+              className="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <div
+                key={index}
+                className="bg-gray-800 rounded-lg overflow-hidden animate-pulse"
+              >
+                <div className="h-80 bg-gray-700" />
+                <div className="p-4">
+                  <div className="h-4 bg-gray-700 rounded mb-2" />
+                  <div className="h-3 bg-gray-700 rounded w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {movies.map((movie) => (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onClick={() => setSelectedMovieId(movie.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal */}
+      {selectedMovieId && (
+        <MovieModal
+          key={selectedMovieId}
+          movieId={selectedMovieId}
+          isOpen={!!selectedMovieId}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
-};
-
-export default OverviewPage;
+}
