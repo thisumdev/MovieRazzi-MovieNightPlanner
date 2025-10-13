@@ -1,44 +1,78 @@
-# MovieRazzi-MovieNightPlanner
-An AI-powered multi-agent system that helps users plan a perfect movie night based on their preferences, recommends movies using intelligent models, and schedules time automatically with calendar integration.
+MovieRazzi — AI-Powered Movie Night Planner
 
-Movie Night Planner
+MovieRazzi is an AI-powered multi-agent system that helps users plan the perfect movie night.
+It understands user preferences, recommends the best movies, and automatically schedules viewing times — all using cutting-edge NLP, LLMs, and Information Retrieval (IR) technologies.
 
-Movie Night Planner is an AI-powered system that helps users:
-- Analyze their movie preferences,
-- Recommend personalized movies using NLP and ML,
-- Schedule the perfect time using calendar integration.
+Overview
 
-This project uses a **multi-agent architecture**, combining LLMs, scikit-learn models, and external APIs to provide a smart, secure, and user-friendly movie night planning experience.
+Domain: Personalized Movie Recommendation and Scheduling
 
+Problem Solved:
+Choosing what to watch and when can be overwhelming. MovieRazzi reduces this decision fatigue by understanding user moods and preferences, retrieving suitable movies, and planning an ideal schedule.
 
+ Core Features
+1.Preference Analyzer Agent
 
- Features
+Extracts genres, actors, and sentiments from user input using SpaCy and transformer-based models.
 
-- Preference Analyzer Agent
-  Extracts genres, actors, and user preferences using NLP (NER, keyword extraction, or LLM).
+Performs zero-shot genre classification and sentiment analysis via Hugging Face pipelines (facebook/bart-large-mnli, distilbert-base-uncased-finetuned-sst-2-english).
 
-- Movie Selector Agent
-  Uses semantic search and a trained scikit-learn model to find and rank the best movies for the user.
+Detects entities (e.g., actors, directors) and corrects spelling errors with fuzzy string matching.
 
-- Schedule Creator Agent
-  Integrates with Google Calendar to find optimal time slots and book events.
+2.Information Retrieval (IR) Agent
 
-- Secure & Responsible AI
-  Includes JWT authentication, input sanitization, fairness-aware recommendations, and explainable AI components.
+Fetches real-time movie data from the TMDB API.
 
+Performs keyword-based and entity-based searches to retrieve movies aligned with the detected preferences.
 
- Tech Stack
+Applies filtering and enrichment operations for accuracy and relevance.
 
- Layer         Tools / Frameworks 
+3.Schedule Creator Agent
 
- Frontend      React.js, Tailwind CSS 
- Backend       FastAPI (Python) 
- Models        scikit-learn, SentenceTransformers, LLM (e.g., LLaMA via Ollama) 
- NLP           spaCy, VADER, Transformers 
- IR / Search   FAISS or Qdrant 
- Auth          JWT (JSON Web Token) 
- APIs          TMDB API, Google Calendar API 
- Deployment    GitHub
+Analyzes user’s free time and creates a personalized viewing schedule automatically.
+
+Supports calendar integration (e.g., Google Calendar API).
+
+4.Orchestrator Agent
+
+Manages communication among all agents through FastAPI REST endpoints.
+
+Ensures smooth data flow between agents for a cohesive experience.
+
+Multi-Agent Architecture
+Agent	Role	File
+Preference Analyzer	Extracts genres, sentiment, entities	preference_analyzer.py
+IR Agent	Retrieves and filters movies	ir_agent.py
+Schedule Creator	Generates personalized schedules	schedule_creator_agent.py
+Orchestrator	Manages inter-agent workflow	orchestrator_agent.py
+
+Agents communicate via structured HTTP APIs, ensuring modularity and scalability.
+
+Use of AI, NLP, and LLMs
+
+NLP Techniques: Entity Recognition (NER), Sentiment Analysis, Keyword Extraction
+
+LLMs: Hugging Face transformer models for classification and emotion detection
+
+IR: TMDB API queries for real-time movie retrieval
+
+Hybrid Reasoning: Combines rule-based and deep learning-based NLP
+
+Security and Responsible AI
+
+Authentication: JWT-based user login/signup
+
+Input Validation: Pydantic models for sanitization
+
+Password Hashing: Secure hashing for stored credentials
+
+HTTPS Enforcement: Enabled in FastAPI middleware
+
+Explainable AI: Recommendations include reasoning (e.g., “Stars Tom Holland and matches your interest in action movies”)
+
+Ethical Filters: Blocks adult or unsafe content automatically
+
+Data Privacy: No persistent user data storage — all data handled transiently
 
 
 Team Members 
