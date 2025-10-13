@@ -6,38 +6,63 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // attempt auto-login if token exists
-  useEffect(() => {
-    async function init() {
-      try {
-        await apiClient
-          .getMe()
-          .then((res) => {
-            // backend /profile returns { msg: "Hello, <username>!" }
-            const username = (res?.msg || "")
-              .replace("Hello, ", "")
-              .replace("!", "");
-            setUser({ username });
-          })
-          .catch(() => {
-            apiClient.signOut();
-            setUser(null);
-          });
-      } finally {
-        setLoading(false);
-      }
+  // Helper: Extract username safely
+  function parseUsername(msg) {
+    return (msg || "")
+      .replace("Hello, ", "")
+      .replace("!", "")
+      .replace(/[^a-zA-Z0-9_]/g, "");
+  }
+
+  // Core: Validate session
+  async function validateSession() {
+    const token = localStorage.getItem("moviehub_token");
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return false;
     }
-    init();
+
+    try {
+      const res = await apiClient.getMe();
+      const uname = parseUsername(res?.msg);
+      if (uname) {
+        setUser({ username: uname });
+      } else {
+        apiClient.signOut();
+        setUser(null);
+      }
+    } catch {
+      apiClient.signOut();
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Run on startup
+  useEffect(() => {
+    validateSession();
   }, []);
 
+  // Listen for token deletion (manual or from another tab)
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === "moviehub_token" && !event.newValue) {
+        apiClient.signOut();
+        setUser(null);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Auth actions
   const signUp = async (username, email, password) => {
     try {
       await apiClient.signUp(username, email, password);
-      // optional: auto-login after signup
       await apiClient.signIn(username, password);
-      const me = await apiClient.getMe();
-      const uname = (me?.msg || "").replace("Hello, ", "").replace("!", "");
-      setUser({ username: uname });
+      await validateSession();
       return { success: true };
     } catch (error) {
       return { error: error.message };
@@ -47,9 +72,7 @@ export function AuthProvider({ children }) {
   const signIn = async (username, password) => {
     try {
       await apiClient.signIn(username, password);
-      const me = await apiClient.getMe();
-      const uname = (me?.msg || "").replace("Hello, ", "").replace("!", "");
-      setUser({ username: uname });
+      await validateSession();
       return { success: true };
     } catch (error) {
       return { error: error.message };
@@ -61,6 +84,9 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = { user, loading, signUp, signIn, signOut };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
