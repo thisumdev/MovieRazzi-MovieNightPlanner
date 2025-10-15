@@ -27,6 +27,7 @@ GENRES = [
     "fantasy", "sci-fi", "animation", "adventure"
 ]
 
+# Load the BART zero-shot model
 try:
     genre_pipe = pipeline(
         "zero-shot-classification",
@@ -78,23 +79,34 @@ def extract_entities(text: str):
         if fuzz.partial_ratio(actor.lower(), text.lower()) > 87:
             people.add(actor)
 
-    return {"people": sorted(people)}
+    #Deduplicate similar names
+    clean_people = []
+    for p in sorted(people):
+        if not any(fuzz.ratio(p.lower(), existing.lower()) > 85 for existing in clean_people):
+            clean_people.append(p)
 
-#Genre detection (hybrid)
+    return {"people": clean_people}
+
+
+# Genre detection (hybrid)
 def classify_genre(text: str):
     genres = set()
 
-    # Transformer (zero-shot) classification
+    # Try zero-shot model
     if genre_pipe:
+        print("🎬 Using BART zero-shot model for genre detection...")
         result = genre_pipe(text, candidate_labels=GENRES, multi_label=True)
         pairs = list(zip(result["labels"], result["scores"]))
         top_two = sorted(pairs, key=lambda x: x[1], reverse=True)[:2]
         for label, score in top_two:
             if score >= 0.25:  # confidence threshold
                 genres.add(label.lower())
+    else:
+        print("⚠️ BART model not loaded — skipping to fallback.")
 
-    # Fallback: keyword matching
+    # Fallback keyword method
     if not genres:
+        print("🪄 Using keyword-based fallback for genre detection...")
         low = text.lower()
         for g, words in GENRE_KEYWORDS.items():
             if any(w in low for w in words):
@@ -102,7 +114,7 @@ def classify_genre(text: str):
 
     return sorted(genres) or ["unspecified"]
 
-#Sentiment analysis function
+# Sentiment analysis function
 def analyze_sentiment(text: str):
     res = sentiment_pipe(text[:512])[0]
     label = res["label"].lower()
@@ -113,7 +125,7 @@ def analyze_sentiment(text: str):
     )
     return {"sentiment": sentiment, "score": round(res["score"], 3)}
 
-#Main analyzer function
+# Main analyzer function
 def analyze_preferences(user_input: str):
     if not user_input.strip():
         return {"error": "Empty input"}
@@ -141,4 +153,4 @@ def analyze_preferences(user_input: str):
         "entities": entities,
         "sentiment": sentiment,
         "summary": summary,
-    }_
+    }
