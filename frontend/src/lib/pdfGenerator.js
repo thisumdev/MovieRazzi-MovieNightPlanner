@@ -8,9 +8,9 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
   const margin = 20;
   let y = 30;
 
-  // ───────────────────────────────
-  // Header
-  // ───────────────────────────────
+ 
+  //header
+
   pdf.setFillColor(229, 9, 20); // MovieRazzi red
   pdf.rect(0, 0, pageWidth, 40, "F");
   pdf.setFont("helvetica", "bold");
@@ -20,9 +20,9 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
   pdf.setFontSize(10);
   pdf.text("Your AI Movie Night Planner", pageWidth - 90, 25);
 
-  // ───────────────────────────────
-  // Title
-  // ───────────────────────────────
+  
+  //title
+ 
   y = 55;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(16);
@@ -41,9 +41,9 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
   pdf.line(margin, y, pageWidth - margin, y);
   y += 12;
 
-  // ───────────────────────────────
-  // User Preferences
-  // ───────────────────────────────
+
+  //user preferences
+ 
   if (userPreferences) {
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(14);
@@ -62,9 +62,9 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
     y += prefLines.length * 6 + 8;
   }
 
-  // ───────────────────────────────
-  // Schedule Section
-  // ───────────────────────────────
+
+  //schedule section
+ 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(15);
   pdf.setTextColor(229, 9, 20);
@@ -111,9 +111,9 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
     y += 10;
   });
 
-  // ───────────────────────────────
-  // Summary
-  // ───────────────────────────────
+  
+  //summary show 
+  
   const summary = scheduleData?.summary || {};
   if (y > pageHeight - 60) {
     pdf.addPage();
@@ -140,9 +140,8 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
   );
   y += 10;
 
-  // ───────────────────────────────
-  // Footer
-  // ───────────────────────────────
+  //footer
+
   const pageCount = pdf.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     pdf.setPage(i);
@@ -155,9 +154,9 @@ export const generateSchedulePDF = (scheduleData, userPreferences) => {
     pdf.text(`Page ${i} of ${pageCount}`, pageWidth - 40, pageHeight - 8);
   }
 
-  // ───────────────────────────────
-  // Save file
-  // ───────────────────────────────
+ 
+  //save file in pdf 
+
   const fileName = `MovieRazzi-Schedule-${format(
     new Date(),
     "yyyy-MM-dd"
