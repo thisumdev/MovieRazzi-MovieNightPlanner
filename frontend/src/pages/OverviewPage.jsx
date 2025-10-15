@@ -26,18 +26,51 @@ export function OverviewPage() {
   const fetchRandomMoviesSafe = async () => {
     try {
       setLoading(true);
+      setError(null);
       const page = Math.floor(Math.random() * 500) + 1;
+
       const res = await axios.get(`${TMDB_BASE}/discover/movie`, {
         params: {
           api_key: API_KEY,
           language: "en-US",
           page,
           sort_by: "popularity.desc",
-          include_adult: false,
+          include_adult: false, // still keep this
           vote_count_gte: 100,
         },
       });
-      setMovies(res.data.results.slice(0, 18));
+
+      // Client-side filter to exclude sexual or adult content
+      const bannedKeywords = [
+        "sex",
+        "sexual",
+        "erotic",
+        "nude",
+        "nudity",
+        "porn",
+        "intimate",
+        "affair",
+        "lust",
+        "strip",
+        "seduce",
+        "fetish",
+        "pleasure",
+        "desire",
+        "provocative",
+        "temptation",
+      ];
+
+      const safeMovies = res.data.results
+        .filter((movie) => !movie.adult) // just in case
+        .filter((movie) => {
+          const text = `${movie.title || ""} ${
+            movie.overview || ""
+          }`.toLowerCase();
+          return !bannedKeywords.some((kw) => text.includes(kw));
+        })
+        .slice(0, 18);
+
+      setMovies(safeMovies);
       setSelectedMovieId(null);
     } catch (err) {
       console.error("Failed to fetch random movies:", err);
