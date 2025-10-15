@@ -6,7 +6,7 @@ from transformers import pipeline
 
 logger = logging.getLogger("preference_agent")
 
-# Named Entity Recognition (NER) for detecting actor/person names
+#Named Entity Recognition(NER) for detecting actor/person names
 try:
     nlp = spacy.load("en_core_web_trf")
     logger.info("✅ Loaded SpaCy transformer model (en_core_web_trf)")
@@ -14,14 +14,14 @@ except Exception:
     nlp = spacy.load("en_core_web_sm")
     logger.warning("⚠️ Using fallback SpaCy small model (en_core_web_sm)")
 
-# Sentiment analysis component
+#Sentiment analysis component
 sentiment_pipe = pipeline(
     "sentiment-analysis",
     model="distilbert-base-uncased-finetuned-sst-2-english",
     device=0 if torch.cuda.is_available() else -1,
 )
 
-# Genre labels
+#Genre classification using zero-shot learning
 GENRES = [
     "action", "romance", "comedy", "drama", "thriller", "horror",
     "fantasy", "sci-fi", "animation", "adventure"
@@ -34,12 +34,12 @@ try:
         model="facebook/bart-large-mnli",
         device=0 if torch.cuda.is_available() else -1,
     )
-    print("✅ BART zero-shot genre model loaded successfully.")
+    logger.info("✅ Loaded zero-shot genre classifier (facebook/bart-large-mnli)")
 except Exception as e:
-    print(f"⚠️ Could not load BART genre classifier: {e}")
+    logger.error(f"⚠️ Could not load genre classifier: {e}")
     genre_pipe = None
 
-# Known actors for fuzzy correction
+#Known actors for fuzzy correction
 KNOWN_ACTORS = [
     "Tom Holland", "Zendaya", "Dwayne Johnson", "Chris Hemsworth",
     "Robert Downey Jr", "Scarlett Johansson", "Emma Stone", "Ryan Gosling",
@@ -50,7 +50,7 @@ KNOWN_ACTORS = [
     "Brad Pitt", "Angelina Jolie", "Keanu Reeves", "Henry Cavill"
 ]
 
-# Keyword-based fallback system
+#Keyword-based fallback system
 GENRE_KEYWORDS = {
     "action": ["fight", "hero", "battle", "war", "chase", "mission", "explosion"],
     "romance": ["love", "romantic", "relationship", "heart", "kiss"],
@@ -64,12 +64,12 @@ GENRE_KEYWORDS = {
     "adventure": ["journey", "explore", "quest", "adventure"],
 }
 
-# A blocklist of adult/explicit keywords
+#A blocklist of adult/explicit keywords
 ADULT_KEYWORDS = [
     "adult", "xxx", "porn", "sex", "erotic", "explicit", "nsfw", "nude", "18+", "fetish"
 ]
 
-# Actor name extraction
+#Actor name extraction
 def extract_entities(text: str):
     doc = nlp(text)
     people = {ent.text.strip() for ent in doc.ents if ent.label_ == "PERSON"}
